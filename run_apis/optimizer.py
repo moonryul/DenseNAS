@@ -37,7 +37,7 @@ class Optimizer(object):
         self.arch_optimizer.zero_grad()
 
         dropped_model = nn.DataParallel(self.Dropped_Network(model))
-        logits, sub_obj = dropped_model(input_valid)
+        logits, sub_obj = dropped_model(input_valid)  # input_valid = input.cuda()
         sub_obj = torch.mean(sub_obj)
         loss = self.criterion(logits, target_valid)  # target_valid = target.cuda()
         if self.config.optim.if_sub_obj:
