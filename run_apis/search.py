@@ -43,6 +43,9 @@ __all__ = ["DEFAULT_TIMEOUT", "launch"]
 
 DEFAULT_TIMEOUT = timedelta(minutes=30)
 
+#Added by Moon Jung
+from torch.nn.parallel import DistributedDataParallel as DDP
+
 
 def _find_free_port():
     import socket
@@ -217,16 +220,22 @@ def main_func( args ):
     arch_gener = ArchGenerater(super_model, config)
     der_Net = lambda net_config: derivedNetwork(net_config, 
                                                 config=config)
-    super_model = nn.DataParallel(super_model)
-
+    
+    # Changed by Moon Jung
+    #super_model = nn.DataParallel(super_model)
+    cur_rank = comm.get_local_rank()
+    
+    super_model = DDP( super_model.to( cur_rank ), device_ids=[cur_rank], broadcast_buffers = False)
+    
     # whether to resume from a checkpoint
     if config.optim.if_resume:
         utils.load_model(super_model, config.optim.resume.load_path)
         start_epoch = config.optim.resume.load_epoch + 1
     else:
         start_epoch = 0
-
-    super_model = super_model.cuda()
+        
+    # Changed by Moon Jung
+    #super_model = super_model.cuda()
 
     if config.optim.sub_obj.type=='flops':
         flops_list, total_flops = super_model.module.get_cost_list(
