@@ -39,7 +39,7 @@ class Optimizer(object):
         dropped_model = nn.DataParallel(self.Dropped_Network(model))
         logits, sub_obj = dropped_model(input_valid)
         sub_obj = torch.mean(sub_obj)
-        loss = self.criterion(logits, target_valid)
+        loss = self.criterion(logits, target_valid)  # target_valid = target.cuda()
         if self.config.optim.if_sub_obj:
             loss_sub_obj = torch.log(sub_obj) / torch.log(torch.tensor(self.config.optim.sub_obj.log_base))
             sub_loss_factor = self.config.optim.sub_obj.sub_loss_factor
