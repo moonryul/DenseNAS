@@ -6,6 +6,8 @@ import torch.nn as nn
 from dataset.prefetch_data import data_prefetcher
 from tools import utils
 
+# Added by Moon Jung
+from detectron2.utils import comm
 
 class Trainer(object):
     def __init__(self, train_data, val_data, optimizer=None, criterion=None, 
@@ -139,7 +141,10 @@ class SearchTrainer(object):
         input, target = prefetcher.next()
         step = 0
         while input is not None:
-            input, target = input.cuda(), target.cuda()
+            input, target = input.cuda(), target.cuda() # tensor.cuda() uses  the default GPU, which is  set with torch.cuda.set_device())
+            # The above is equivalent to 
+            # input, target = input.to(  comm.get_local_rank() ), target.to( comm.get_local_rank() )
+            
             data_t = time.time() - start
             n = input.size(0)
             if optim_obj == 'Weights':
